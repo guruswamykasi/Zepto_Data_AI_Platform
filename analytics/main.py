@@ -2,6 +2,7 @@ from loader import TitanicLoader
 from profiling import DataProfiler
 from cleaning import DataCleaner
 from eda import DataEDA
+from model import TitanicModel
 
 
 print("Welcome to Zepto Analytics Pipeline")
@@ -72,3 +73,11 @@ eda.chart_age_survival(clean_df)
 eda.chart_fare_survival(clean_df)
 
 standard_df = eda.standardize_features(clean_df)
+
+model = TitanicModel()
+
+X_train, X_test, y_train, y_test = model.split_dataset(clean_df)
+
+preprocessor = model.build_preprocessor()
+
+print(preprocessor)
