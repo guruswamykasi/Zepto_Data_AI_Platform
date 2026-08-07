@@ -1,6 +1,7 @@
 from loader import TitanicLoader
 from profiling import DataProfiler
 from cleaning import DataCleaner
+from eda import DataEDA
 
 
 print("Welcome to Zepto Analytics Pipeline")
@@ -31,3 +32,21 @@ print("\nClean Dataset Shape")
 print(clean_df.shape)
 
 clean_df.to_csv("analytics/data/titanic_clean.csv", index=False)
+
+eda = DataEDA()
+
+eda.age_histogram(clean_df)
+
+eda.fare_histogram(clean_df)
+
+eda.age_boxplot(clean_df)
+
+eda.fare_boxplot(clean_df)
+
+eda.calculate_outliers(clean_df, "age")
+
+eda.calculate_outliers(clean_df, "fare")
+
+eda.fare_statistics(clean_df)
+
+eda.fare_skewness(clean_df)
