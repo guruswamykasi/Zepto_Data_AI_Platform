@@ -1,6 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 
 
 class DataEDA:
@@ -136,7 +137,110 @@ class DataEDA:
 
             print("Fare distribution is approximately Symmetric")   
 
+    def survival_by_gender(self, df):
 
+        print("\n========== Survival Rate by Gender ==========\n")
+
+        survival = (
+            df.groupby("sex")["survived"]
+            .mean()
+            .mul(100)
+            .round(2)
+        )
+
+        print(survival)
+
+    def survival_by_class(self, df):
+
+        print("\n========== Survival Rate by Passenger Class ==========\n")
+
+        survival = (
+            df.groupby("pclass")["survived"]
+            .mean()
+            .mul(100)
+            .round(2)
+        )
+
+        print(survival)
+
+    def survival_by_gender_and_class(self, df):
+
+        print("\n========== Survival by Gender and Class ==========\n")
+
+        survival = (
+            df.groupby(["sex", "pclass"])["survived"]
+            .mean()
+            .mul(100)
+            .round(2)
+        )
+
+        print(survival)      
+
+    def correlation_matrix(self, df):
+
+        columns = [
+        "survived",
+        "pclass",
+        "age",
+        "sibsp",
+        "parch",
+        "fare"
+        ]
+
+        corr = df[columns].corr()
+
+        print("\nCorrelation Matrix\n")
+
+        print(corr)
+
+        return corr     
+
+    def correlation_heatmap(self, corr):
+
+        plt.figure(figsize=(8,6))
+
+        sns.heatmap(
+            corr,
+            annot=True,
+            cmap="coolwarm"
+        )
+
+        plt.title("Titanic Correlation Heatmap")
+
+        plt.savefig("analytics/images/correlation_heatmap.png")
+
+        plt.close()
+
+        print("Heatmap Saved")
+
+    def strongest_correlations(self, corr):
+
+        print("\n========== Strongest Correlations ==========\n")
+
+        pairs = []
+
+        columns = corr.columns
+
+        for i in range(len(columns)):
+            for j in range(i + 1, len(columns)):
+
+                pairs.append((
+                    columns[i],
+                    columns[j],
+                    corr.iloc[i, j]
+                ))
+
+        pairs = sorted(
+            pairs,
+            key=lambda x: abs(x[2]),
+            reverse=True
+        )
+
+        for first, second, value in pairs[:2]:
+
+            print(
+                f"{first} <-> {second} : {value:.3f}"
+            )
 
 
 

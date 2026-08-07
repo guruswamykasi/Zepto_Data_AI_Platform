@@ -50,3 +50,15 @@ eda.calculate_outliers(clean_df, "fare")
 eda.fare_statistics(clean_df)
 
 eda.fare_skewness(clean_df)
+
+eda.survival_by_gender(clean_df)
+
+eda.survival_by_class(clean_df)
+
+eda.survival_by_gender_and_class(clean_df)
+
+corr = eda.correlation_matrix(clean_df)
+
+eda.correlation_heatmap(corr)
+
+eda.strongest_correlations(corr)
