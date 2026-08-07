@@ -80,4 +80,69 @@ X_train, X_test, y_train, y_test = model.split_dataset(clean_df)
 
 preprocessor = model.build_preprocessor()
 
-print(preprocessor)
+logistic = model.train_logistic(
+
+    preprocessor,
+
+    X_train,
+
+    y_train
+
+)
+
+tree = model.train_tree(
+
+    preprocessor,
+
+    X_train,
+
+    y_train
+
+)
+
+forest = model.train_forest(
+
+    preprocessor,
+
+    X_train,
+
+    y_train
+
+)
+
+model.evaluate_model(
+
+    logistic,
+
+    X_test,
+
+    y_test,
+
+    "LogisticRegression"
+
+)
+
+model.evaluate_model(
+
+    tree,
+
+    X_test,
+
+    y_test,
+
+    "DecisionTree"
+
+)
+
+model.evaluate_model(
+
+    forest,
+
+    X_test,
+
+    y_test,
+
+    "RandomForest"
+
+)
+model.save_tree(tree)

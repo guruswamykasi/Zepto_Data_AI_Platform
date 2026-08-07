@@ -11,9 +11,32 @@ from sklearn.preprocessing import StandardScaler
 
 from sklearn.impute import SimpleImputer
 
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import plot_tree
+
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.metrics import (
+    confusion_matrix,
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    RocCurveDisplay
+)
+
+import matplotlib.pyplot as plt
+import os
+
 class TitanicModel:
 
     def __init__(self):
+
+        os.makedirs("analytics/images", exist_ok=True)
+
         print("Titanic Machine Learning Started")
 
     def split_dataset(self, df):
@@ -164,6 +187,165 @@ class TitanicModel:
         )
     
         return preprocessor
+
+    def train_logistic(
+            self,
+            preprocessor,
+            X_train,
+            y_train
+        ):
+
+        pipeline = Pipeline(
+
+            [
+
+                ("preprocessor", preprocessor),
+
+                ("model", LogisticRegression(max_iter=1000))
+
+            ]
+
+        )
+
+        pipeline.fit(X_train, y_train)
+
+        return pipeline
+
+    def train_tree(
+            self,
+            preprocessor,
+            X_train,
+            y_train
+        ):
+
+        pipeline = Pipeline(
+
+            [
+
+                ("preprocessor", preprocessor),
+
+                ("model", DecisionTreeClassifier(random_state=42))
+
+            ]
+
+        )
+
+        pipeline.fit(X_train, y_train)
+
+        return pipeline
+
+    def train_forest(
+            self,
+            preprocessor,
+            X_train,
+            y_train
+        ):
+
+        pipeline = Pipeline(
+
+            [
+
+                ("preprocessor", preprocessor),
+
+                (
+                    "model",
+
+                    RandomForestClassifier(random_state=42)
+                )
+
+            ]
+
+        )
+
+        pipeline.fit(X_train, y_train)
+
+        return pipeline
+
+    def evaluate_model(
+
+            self,
+
+            model,
+
+            X_test,
+
+            y_test,
+
+            name
+
+        ):
+
+        predictions = model.predict(X_test)
+
+        probabilities = model.predict_proba(X_test)[:,1]
+
+        print("\n========================")
+
+        print(name)
+
+        print("========================")
+
+        print("Accuracy :", accuracy_score(y_test,predictions))
+
+        print("Precision :", precision_score(y_test,predictions))
+
+        print("Recall :", recall_score(y_test,predictions))
+
+        print("F1 :", f1_score(y_test,predictions))
+
+        print("AUC :", roc_auc_score(y_test,probabilities))
+
+        print()
+
+        print("Confusion Matrix")
+
+        print(confusion_matrix(y_test,predictions))
+
+        RocCurveDisplay.from_estimator(
+
+            model,
+
+            X_test,
+
+            y_test
+
+        )
+
+        plt.savefig(f"analytics/images/{name}_roc.png")
+
+        plt.close()
+
+    def save_tree(
+
+            self,
+
+            tree_pipeline
+
+        ):
+
+        feature_names = tree_pipeline.named_steps[
+            "preprocessor"
+            ].get_feature_names_out()
+
+        tree = tree_pipeline.named_steps["model"]
+
+        plt.figure(figsize=(20,10))
+
+        plot_tree(
+
+            tree,
+
+            feature_names=feature_names,
+
+            class_names=["Dead","Survived"],
+
+            filled=True
+
+        )
+
+        plt.savefig("analytics/images/decision_tree.png")
+
+        plt.close()    
 
 
 
