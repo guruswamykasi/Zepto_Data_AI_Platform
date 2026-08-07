@@ -2,6 +2,8 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+
 
 
 class DataEDA:
@@ -242,6 +244,103 @@ class DataEDA:
                 f"{first} <-> {second} : {value:.3f}"
             )
 
+
+    def chart_survival_by_gender(self, df):
+
+        plt.figure(figsize=(6,4))
+
+        sns.barplot(
+            data=df,
+            x="sex",
+            y="survived"
+        )
+
+        plt.title("Survival Rate by Gender")
+
+        plt.savefig(
+            "analytics/images/survival_gender.png"
+        )
+
+        plt.close()
+
+        print("Saved survival_gender.png")
+
+    def chart_survival_by_class(self, df):
+
+        plt.figure(figsize=(6,4))
+
+        sns.barplot(
+            data=df,
+            x="pclass",
+            y="survived"
+        )
+
+        plt.title("Survival Rate by Passenger Class")
+
+        plt.savefig(
+            "analytics/images/survival_class.png"
+        )
+
+        plt.close()
+
+        print("Saved survival_class.png")  
+
+    def chart_age_survival(self, df):
+
+        plt.figure(figsize=(7,5))
+
+        sns.boxplot(
+            data=df,
+            x="survived",
+            y="age"
+        )
+
+        plt.title("Age Distribution by Survival")
+
+        plt.savefig(
+            "analytics/images/age_survival.png"
+        )
+
+        plt.close()
+
+        print("Saved age_survival.png")
+
+    def chart_fare_survival(self, df):
+
+        plt.figure(figsize=(7,5))
+
+        sns.boxplot(
+            data=df,
+            x="survived",
+            y="fare"
+        )
+
+        plt.title("Fare Distribution by Survival")
+
+        plt.savefig(
+            "analytics/images/fare_survival.png"
+        )
+
+        plt.close()
+
+        print("Saved fare_survival.png")    
+
+    def standardize_features(self, df):
+
+        scaler = StandardScaler()
+
+        temp = df.copy()
+
+        temp[["age", "fare"]] = scaler.fit_transform(
+            temp[["age", "fare"]]
+        )
+
+        print("\nAfter Standardization")
+
+        print(temp[["age", "fare"]].agg(["mean", "std"]))
+
+        return temp    
+          
 
 
 

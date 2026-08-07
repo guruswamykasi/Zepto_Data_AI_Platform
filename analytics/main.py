@@ -62,3 +62,13 @@ corr = eda.correlation_matrix(clean_df)
 eda.correlation_heatmap(corr)
 
 eda.strongest_correlations(corr)
+
+eda.chart_survival_by_gender(clean_df)
+
+eda.chart_survival_by_class(clean_df)
+
+eda.chart_age_survival(clean_df)
+
+eda.chart_fare_survival(clean_df)
+
+standard_df = eda.standardize_features(clean_df)
