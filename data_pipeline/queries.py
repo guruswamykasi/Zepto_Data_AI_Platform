@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 
-DATABASE = "data/zepto.db"
+DATABASE = "data_pipeline/data/zepto.db"
 
 def get_connection():
     return sqlite3.connect(DATABASE)

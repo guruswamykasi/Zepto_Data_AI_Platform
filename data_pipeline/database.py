@@ -3,7 +3,7 @@ import pandas as pd
 
 def create_connection():
 
-    connection = sqlite3.connect("data/zepto.db")
+    connection = sqlite3.connect("data_pipeline/data/zepto.db")
 
     return connection
 
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS books(
 
 def load_data():
 
-    df = pd.read_csv("data/clean_books.csv")
+    df = pd.read_csv("data_pipeline/data/clean_books.csv")
 
     conn = create_connection()
 
