@@ -18,6 +18,12 @@ from sklearn.tree import plot_tree
 
 from sklearn.ensemble import RandomForestClassifier
 
+from sklearn.model_selection import GridSearchCV
+
+from imblearn.over_sampling import SMOTE
+
+from imblearn.pipeline import Pipeline as ImbPipeline
+
 from sklearn.metrics import (
     confusion_matrix,
     accuracy_score,
@@ -30,6 +36,13 @@ from sklearn.metrics import (
 
 import matplotlib.pyplot as plt
 import os
+
+
+from sklearn.model_selection import GridSearchCV
+
+from imblearn.over_sampling import SMOTE
+
+from imblearn.pipeline import Pipeline as ImbPipeline
 
 class TitanicModel:
 
@@ -346,6 +359,154 @@ class TitanicModel:
         plt.savefig("analytics/images/decision_tree.png")
 
         plt.close()    
+
+    def class_balance(self, y):
+
+        print("\n===== Class Balance =====")
+
+        counts = y.value_counts()
+
+        percentages = (counts / len(y) * 100).round(2)
+
+        print(pd.DataFrame({
+            "Count": counts,
+            "Percentage": percentages
+        }))
+
+    def baseline_model(self, preprocessor, X_train, y_train):
+
+        pipeline = Pipeline([
+            ("preprocessor", preprocessor),
+            ("model", RandomForestClassifier(random_state=42))
+        ])
+
+        pipeline.fit(X_train, y_train)
+        return pipeline
+
+    def balanced_model(self, preprocessor, X_train, y_train):
+
+        pipeline = Pipeline([
+            ("preprocessor", preprocessor),
+            ("model",
+                RandomForestClassifier(
+                    random_state=42,
+                    class_weight="balanced"
+                )
+            )
+        ])
+
+        pipeline.fit(X_train, y_train)
+
+        return pipeline
+
+    def smote_model(self, preprocessor, X_train, y_train):
+
+        pipeline = ImbPipeline([
+
+            ("preprocessor", preprocessor),
+
+            ("smote", SMOTE(random_state=42)),
+
+            ("model",
+                RandomForestClassifier(
+                    random_state=42
+                )
+            )
+        ])
+
+        pipeline.fit(X_train, y_train)
+
+        return pipeline
+
+    def compare_models(
+            self,
+            models,
+            X_test,
+            y_test
+        ):
+
+        results = []
+
+        for name, model in models.items():
+
+            pred = model.predict(X_test)
+
+            results.append({
+
+                "Model": name,
+
+                "Precision": precision_score(y_test, pred),
+
+                "Recall": recall_score(y_test, pred),
+
+                "F1": f1_score(y_test, pred)
+
+            })
+
+        result_df = pd.DataFrame(results)
+
+        print(result_df)
+
+        return result_df
+
+    def tune_random_forest(
+            self,
+            preprocessor,
+            X_train,
+            y_train
+        ):
+
+        pipeline = Pipeline([
+
+            ("preprocessor", preprocessor),
+
+            ("model",
+                RandomForestClassifier(
+                    random_state=42,
+                    oob_score=True,
+                    bootstrap=True
+                )
+            )
+
+        ])
+
+        parameters = {
+
+            "model__n_estimators": [100, 200],
+
+            "model__max_depth": [5, 10, None],
+
+            "model__max_features": ["sqrt", "log2"]
+
+        }
+
+        grid = GridSearchCV(
+
+                pipeline,
+
+                parameters,
+
+                cv=5,
+
+                scoring="accuracy",
+
+                n_jobs=-1
+
+        )
+
+        grid.fit(X_train, y_train)
+
+        print("\nBest Parameters")
+
+        print(grid.best_params_)
+
+        best_pipeline = grid.best_estimator_
+
+        print("\nOOB Score")
+
+        print(best_pipeline.named_steps["model"].oob_score_)
+
+        return best_pipeline
 
 
 

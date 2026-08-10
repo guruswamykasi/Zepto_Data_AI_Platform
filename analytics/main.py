@@ -146,3 +146,39 @@ model.evaluate_model(
 
 )
 model.save_tree(tree)
+
+model.class_balance(y_train)
+
+baseline = model.baseline_model(
+    preprocessor,
+    X_train,
+    y_train
+)
+
+balanced = model.balanced_model(
+    preprocessor,
+    X_train,
+    y_train
+)
+
+smote = model.smote_model(
+    preprocessor,
+    X_train,
+    y_train
+)
+
+comparison = model.compare_models(
+    {
+        "Baseline": baseline,
+        "Balanced": balanced,
+        "SMOTE": smote
+    },
+    X_test,
+    y_test
+)
+
+best_pipeline = model.tune_random_forest(
+    preprocessor,
+    X_train,
+    y_train
+)
