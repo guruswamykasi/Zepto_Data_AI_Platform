@@ -23,6 +23,8 @@ from sklearn.model_selection import GridSearchCV
 from imblearn.over_sampling import SMOTE
 
 from imblearn.pipeline import Pipeline as ImbPipeline
+from sklearn.linear_model import LinearRegression
+
 
 from sklearn.metrics import (
     confusion_matrix,
@@ -31,12 +33,15 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     roc_auc_score,
+    mean_absolute_error,
+    mean_squared_error,
+    r2_score,
     RocCurveDisplay
 )
 
 import matplotlib.pyplot as plt
 import os
-
+import joblib
 
 from sklearn.model_selection import GridSearchCV
 
@@ -291,28 +296,49 @@ class TitanicModel:
         predictions = model.predict(X_test)
 
         probabilities = model.predict_proba(X_test)[:,1]
+ 
+        accuracy = accuracy_score(
+            y_test,
+            predictions
+        )
 
+        precision =  precision_score(
+            y_test,
+            predictions
+        )
+
+        recall = recall_score(
+            y_test,
+            predictions
+        )
+
+        f1 = f1_score(
+            y_test,
+            predictions
+        )
+
+        auc = roc_auc_score(
+            y_test,
+            probabilities
+        )
         print("\n========================")
-
         print(name)
-
         print("========================")
 
-        print("Accuracy :", accuracy_score(y_test,predictions))
+        print("Accuracy :", accuracy)
+        print("Precision :", precision)
+        print("Recall :", recall)
+        print("F1 :", f1)
+        print("AUC :", auc)
 
-        print("Precision :", precision_score(y_test,predictions))
+        print("\nConfusion Matrix")
 
-        print("Recall :", recall_score(y_test,predictions))
-
-        print("F1 :", f1_score(y_test,predictions))
-
-        print("AUC :", roc_auc_score(y_test,probabilities))
-
-        print()
-
-        print("Confusion Matrix")
-
-        print(confusion_matrix(y_test,predictions))
+        print(
+            confusion_matrix(
+                y_test,
+                predictions
+            )
+        )
 
         RocCurveDisplay.from_estimator(
 
@@ -327,6 +353,14 @@ class TitanicModel:
         plt.savefig(f"analytics/images/{name}_roc.png")
 
         plt.close()
+        return{
+            "Model":name,
+            "Accuracy":accuracy,
+            "Precision":precision,
+            "Recall":recall,
+            "F1":f1,
+            "AUC":auc
+        }
 
     def save_tree(
 
@@ -508,6 +542,198 @@ class TitanicModel:
 
         return best_pipeline
 
+    def train_regression(self, df):
+
+        features = [
+            "pclass",
+            "sex",
+            "age",
+            "sibsp",
+            "parch",
+            "embarked"
+        ]
+
+        X = df[features]
+
+        y = df["fare"]
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X,
+            y,
+            test_size=0.20,
+            random_state=42
+        )
+
+        numeric_columns = [
+            "pclass",
+            "age",
+            "sibsp",
+            "parch"
+        ]
+
+        categorical_columns = [
+            "sex",
+            "embarked"
+        ]
+
+        numeric_pipeline = Pipeline([
+            (
+                "imputer",
+                SimpleImputer(strategy="median")
+            ),
+            (
+                "scaler",
+                StandardScaler()
+            )
+        ])
+
+        categorical_pipeline = Pipeline([
+            (
+                "imputer",
+                SimpleImputer(strategy="most_frequent")
+            ),
+            (
+                "encoder",
+                OneHotEncoder(handle_unknown="ignore")
+            )
+        ])
+
+        preprocessor = ColumnTransformer([
+            (
+                "numeric",
+                numeric_pipeline,
+                numeric_columns
+            ),
+            (
+                "categorical",
+                categorical_pipeline,
+                categorical_columns
+            )
+        ])
+
+        pipeline = Pipeline([
+            (
+                "preprocessor",
+                preprocessor
+            ),
+            (
+                "model",
+                LinearRegression()
+            )
+        ])
+
+        pipeline.fit(X_train, y_train)
+
+        predictions = pipeline.predict(X_test)
+
+        return pipeline, y_test, predictions, X_test
+
+    def evaluate_regression(
+            self,
+            y_test,
+            predictions,
+            pipeline,
+            X_test
+        ):
+
+        mae = mean_absolute_error(
+            y_test,
+            predictions
+        )
+
+        rmse = np.sqrt(
+            mean_squared_error(
+                y_test,
+                predictions
+            )
+        )
+
+        r2 = r2_score(
+            y_test,
+            predictions
+        )
+
+        transformed_X = pipeline.named_steps[
+            "preprocessor"
+        ].transform(X_test)
+
+        p = transformed_X.shape[1]
+
+        n = len(y_test)
+
+        adjusted_r2 = (1- ((1 - r2) * (n - 1)) / (n - p - 1))
+
+        print("\n========== Regression Results ==========")
+
+        print("MAE :", round(mae, 4))
+
+        print("RMSE :", round(rmse, 4))
+
+        print("R2 :", round(r2, 4))
+
+        print("Adjusted R2 :", round(adjusted_r2, 4))
+
+        return {
+            "MAE": mae,
+            "RMSE": rmse,
+            "R2": r2,
+            "Adjusted R2": adjusted_r2
+        }
+
+    def residual_plot(
+            self,
+            y_test,
+            predictions
+        ):
+
+        residuals = y_test - predictions
+
+        plt.figure(figsize=(8, 5))
+
+        plt.scatter(
+            predictions,
+            residuals
+        )
+
+        plt.axhline(
+            y=0,
+            linestyle="--"
+        )
+
+        plt.xlabel("Predicted Fare")
+
+        plt.ylabel("Residual")
+
+        plt.title("Fare Regression Residual Plot")
+
+        plt.savefig(
+            "analytics/images/fare_residual_plot.png"
+        )
+
+        plt.close()
+
+        print(
+            "Saved fare_residual_plot.png"
+        )
+
+    def save_pipeline(self, pipeline):
+
+        joblib.dump(
+            pipeline,
+            "analytics/titanic_best_pipeline.joblib"
+        )
+
+        print("Complete pipeline saved successfully")    
+
+    def load_pipeline(self):
+
+        pipeline = joblib.load(
+            "analytics/titanic_best_pipeline.joblib"
+        )
+
+        print("Pipeline loaded successfully")
+
+        return pipeline
 
 
 

@@ -3,6 +3,7 @@ from profiling import DataProfiler
 from cleaning import DataCleaner
 from eda import DataEDA
 from model import TitanicModel
+import pandas as pd
 
 
 print("Welcome to Zepto Analytics Pipeline")
@@ -182,3 +183,51 @@ best_pipeline = model.tune_random_forest(
     X_train,
     y_train
 )
+
+regression_pipeline, y_test_reg, predictions_reg, X_test_reg = (
+    model.train_regression(clean_df)
+)
+
+model.residual_plot(
+    y_test_reg,
+    predictions_reg
+)
+
+logistic_result = model.evaluate_model(
+    logistic,
+    X_test,
+    y_test,
+    "LogisticRegression"
+)
+
+tree_result = model.evaluate_model(
+    tree,
+    X_test,
+    y_test,
+    "DecisionTree"
+)
+
+forest_result = model.evaluate_model(
+    forest,
+    X_test,
+    y_test,
+    "RandomForest"
+)
+
+classification_results = pd.DataFrame([
+    logistic_result,
+    tree_result,
+    forest_result
+])
+
+best_pipeline = model.tune_random_forest(
+    preprocessor,
+    X_train,
+    y_train
+)
+
+model.save_pipeline(
+    best_pipeline
+)
+
+loaded_pipeline = model.load_pipeline()
