@@ -66,32 +66,26 @@ def store_embeddings():
 
 
 
-def search_collection(query):
+def search_documents(query, top_k=3):
 
-    model = create_embedding_model()
-    collection = create_chroma_collection()
-
-    query_embedding = model.encode([query]).tolist()
+    query_embedding = model.encode(query).tolist()
 
     results = collection.query(
-        query_embeddings=query_embedding,
-        n_results=3
+        query_embeddings=[query_embedding],
+        n_results=top_k
     )
 
-    return results
+    documents = results["documents"][0]
+    ids = results["ids"][0]
 
+    results_list = []
 
+    for document_id, content in zip(ids, documents):
 
-if __name__ == "__main__":
+        results_list.append({
+            "id": document_id,
+            "content": content
+        })
 
-    store_embeddings()
-
-    results = search_collection( "How long does Zepto delivery take?" )
-    print("\nSearch Results:")
-
-    for document in results["documents"][0]: 
-        print("\n--------------------") 
-        print(document)
-
-    #collection = store_embeddings()
+    return results_list
 

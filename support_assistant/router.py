@@ -23,21 +23,3 @@ def classify_intent(state):
         "intent": "general_question"
     }
 
-
-if __name__ == "__main__":
-
-    policy_state = {
-        "query": "What is the delivery fee?"
-    }
-
-    result = classify_intent(policy_state)
-
-    print(result)
-
-    general_state = {
-        "query": "Who is the president of India?"
-    }
-
-    result = classify_intent(general_state)
-
-    print(result)

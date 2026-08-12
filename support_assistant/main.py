@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from graph import app_graph
+from graph import run_graph
 from models import AnswerResponse
 
 
@@ -16,20 +16,16 @@ app = FastAPI(
 class AskRequest(BaseModel):
     query: str
 
+@app.get("/")
+def home():
+    return {
+        "message": "Welcome to Zepto Support Assistant"
+    }
+
 
 @app.post("/ask", response_model=AnswerResponse)
-def ask(request: AskRequest):
+def ask_question(request: AskRequest):
 
-    result = app_graph.invoke({
-        "query": request.query,
-        "intent": "",
-        "answer": "",
-        "sources": [],
-        "confidence": 0.0
-    })
+    result = run_graph(request.query)
 
-    return AnswerResponse(
-        answer=result["answer"],
-        sources=result["sources"],
-        confidence=result["confidence"]
-    )
+    return result

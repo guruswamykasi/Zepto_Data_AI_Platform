@@ -8,12 +8,3 @@ def direct_answer(state):
     }
 
 
-if __name__ == "__main__":
-
-    state = {
-        "query": "Who is Virat Kohli?"
-    }
-
-    result = direct_answer(state)
-
-    print(result)

@@ -2,11 +2,20 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 
 from chucker import create_chunks
+from embedding_store import create_embedding_model
 
 MODEL_NAME = "all-MiniLM-L6-v2"
 DB_PATH = "chroma_db"
 COLLECTION_NAME = "zepto_policies"
 
+
+client = chromadb.PersistentClient(
+    path="chroma_db"
+)
+
+collection = client.get_collection(
+    name="zepto_policies"
+)
 
 def create_vector_store():
 
@@ -51,9 +60,25 @@ def create_vector_store():
 
     return collection
 
+def search_documents(query, top_k=3):
 
-if __name__ == "__main__":
+    query_embedding = create_embedding_model().encode(query).tolist()
 
-    collection = create_vector_store()
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=top_k
+    )
 
-    print("Vector store created successfully.")
+    documents = results["documents"][0]
+    ids = results["ids"][0]
+
+    results_list = []
+
+    for document_id, content in zip(ids, documents):
+
+        results_list.append({
+            "id": document_id,
+            "content": content
+        })
+
+    return results_list
