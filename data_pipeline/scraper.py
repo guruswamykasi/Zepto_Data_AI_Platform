@@ -9,13 +9,13 @@ def download_home_page():
     response = requests.get(url)
     html = response.content.decode("utf-8")
 
-    with open("data/homepage.html", "w", encoding="utf-8") as file:
+    with open("data_pipeline/data/homepage.html", "w", encoding="utf-8") as file:
       file.write(html)
 
 
 
 def get_home_page():
-    with open("data/homepage.html", encoding="utf-8") as file:
+    with open("data_pipeline/data/homepage.html", encoding="utf-8") as file:
         html = file.read()
         return html 
             
@@ -147,4 +147,4 @@ book_list = scrape_books()
 
 df = pd.DataFrame(book_list)
 
-df.to_csv("data/raw_books.csv", index=False)
+df.to_csv("data_pipeline/data/raw_books.csv", index=False)
