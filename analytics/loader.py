@@ -6,10 +6,7 @@ import seaborn as sns
 class TitanicLoader:
 
     def load_dataset(self):
-        """
-        Load Titanic dataset from Seaborn
-        """
-
+      
         print("Loading Titanic dataset...")
 
         df = sns.load_dataset("titanic")

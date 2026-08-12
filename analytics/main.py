@@ -2,6 +2,8 @@ from loader import TitanicLoader
 from profiling import DataProfiler
 from cleaning import DataCleaner
 from eda import DataEDA
+from model import TitanicModel
+import pandas as pd
 
 
 print("Welcome to Zepto Analytics Pipeline")
@@ -72,3 +74,160 @@ eda.chart_age_survival(clean_df)
 eda.chart_fare_survival(clean_df)
 
 standard_df = eda.standardize_features(clean_df)
+
+model = TitanicModel()
+
+X_train, X_test, y_train, y_test = model.split_dataset(clean_df)
+
+preprocessor = model.build_preprocessor()
+
+logistic = model.train_logistic(
+
+    preprocessor,
+
+    X_train,
+
+    y_train
+
+)
+
+tree = model.train_tree(
+
+    preprocessor,
+
+    X_train,
+
+    y_train
+
+)
+
+forest = model.train_forest(
+
+    preprocessor,
+
+    X_train,
+
+    y_train
+
+)
+
+model.evaluate_model(
+
+    logistic,
+
+    X_test,
+
+    y_test,
+
+    "LogisticRegression"
+
+)
+
+model.evaluate_model(
+
+    tree,
+
+    X_test,
+
+    y_test,
+
+    "DecisionTree"
+
+)
+
+model.evaluate_model(
+
+    forest,
+
+    X_test,
+
+    y_test,
+
+    "RandomForest"
+
+)
+model.save_tree(tree)
+
+model.class_balance(y_train)
+
+baseline = model.baseline_model(
+    preprocessor,
+    X_train,
+    y_train
+)
+
+balanced = model.balanced_model(
+    preprocessor,
+    X_train,
+    y_train
+)
+
+smote = model.smote_model(
+    preprocessor,
+    X_train,
+    y_train
+)
+
+comparison = model.compare_models(
+    {
+        "Baseline": baseline,
+        "Balanced": balanced,
+        "SMOTE": smote
+    },
+    X_test,
+    y_test
+)
+
+best_pipeline = model.tune_random_forest(
+    preprocessor,
+    X_train,
+    y_train
+)
+
+regression_pipeline, y_test_reg, predictions_reg, X_test_reg = (
+    model.train_regression(clean_df)
+)
+
+model.residual_plot(
+    y_test_reg,
+    predictions_reg
+)
+
+logistic_result = model.evaluate_model(
+    logistic,
+    X_test,
+    y_test,
+    "LogisticRegression"
+)
+
+tree_result = model.evaluate_model(
+    tree,
+    X_test,
+    y_test,
+    "DecisionTree"
+)
+
+forest_result = model.evaluate_model(
+    forest,
+    X_test,
+    y_test,
+    "RandomForest"
+)
+
+classification_results = pd.DataFrame([
+    logistic_result,
+    tree_result,
+    forest_result
+])
+
+best_pipeline = model.tune_random_forest(
+    preprocessor,
+    X_train,
+    y_train
+)
+
+model.save_pipeline(
+    best_pipeline
+)
+
+loaded_pipeline = model.load_pipeline()
